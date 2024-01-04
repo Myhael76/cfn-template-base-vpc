@@ -1,0 +1,42 @@
+# Started with https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/quickref-ec2-vpc.html
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: "Simple VPC"
+
+Parameters:
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.192.0.0/16
+  PrivateSubnetCIDR:
+    Description: Please enter the IP range (CIDR notation) for the private VPC subnet
+    Type: String
+    Default: 10.192.1.0/24
+
+Resources:
+
+  # Main VPC
+  SimpleVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock:
+        Ref: VpcCIDR
+      #EnableDnsSupport: false
+      #EnableDnsHostnames: false
+      InstanceTenancy: default
+    # For this simple example we disable the cfn_nag recommendation to log the VPC transit.
+    # Enable it IRL because it gives good observability
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W60
+            reason: "SimpleVPC without flow log attached provided for example purposes only."
+  
+  # We only want a private subnet
+  SimplePrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      CidrBlock:
+        Ref: PrivateSubnetCIDR
+      VpcId:
+        Ref: SimpleVPC
